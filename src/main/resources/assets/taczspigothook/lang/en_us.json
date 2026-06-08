@@ -1,0 +1,8 @@
+{
+  "command.taczspigothook.debug.enabled": "§aDebug mode enabled",
+  "command.taczspigothook.debug.disabled": "§cDebug mode disabled",
+  "debug.taczspigothook.handle.init": "§cAttempt to transfer TacZ to Spigot",
+  "debug.taczspigothook.handle.call": "§cCall Spigot event",
+  "debug.taczspigothook.handle.cancel": "§cCall Spigot event cancel",
+  "debug.taczspigothook.handle.success": "§cCall Spigot event success"
+}

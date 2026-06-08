@@ -1,0 +1,8 @@
+{
+  "command.taczspigothook.debug.enabled": "§a调试模式已启用",
+  "command.taczspigothook.debug.disabled": "§c调试模式已禁用",
+  "debug.taczspigothook.handle.init": "§c正在将TacZ事件链接到Spigot",
+  "debug.taczspigothook.handle.call": "§c抛出事件",
+  "debug.taczspigothook.handle.cancel": "§c被Spigot的插件取消",
+  "debug.taczspigothook.handle.success": "§c成功抛出"
+}
