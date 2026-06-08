@@ -17,12 +17,10 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftLivingEntity;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.slf4j.Logger;
 import org.verdurae.taczspigothook.Command.TSHDebug;
+import org.verdurae.taczspigothook.Utils.NmsUtil;
 
 import java.util.UUID;
 
@@ -39,6 +37,7 @@ public class TacZSpigotHook {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
+        NmsUtil.init();
     }
 
 
@@ -60,44 +59,42 @@ public class TacZSpigotHook {
     }
 
     @SubscribeEvent
-    public void onTacZShoot(EntityHurtByGunEvent.Pre event) {
+    public void onEntityHurtByGun(EntityHurtByGunEvent.Pre event) {
         double damage = event.getAmount();
         Entity NmsEntity = event.getHurtEntity();
         LivingEntity NmsAttacker = event.getAttacker();
-        CraftEntity craftEntity = CraftEntity.getEntity((CraftServer) Bukkit.getServer(), NmsEntity);
-        CraftEntity craftAttacker = CraftEntity.getEntity((CraftServer) Bukkit.getServer(), NmsAttacker);
-        if (craftEntity instanceof CraftLivingEntity craftLivingEntity && craftAttacker instanceof CraftLivingEntity craftLivingAttacker) {
+        Object craftServer = Bukkit.getServer();
+        Object craftEntity = NmsUtil.getCraftEntity(craftServer, NmsEntity);
+        Object craftAttacker = NmsUtil.getCraftEntity(craftServer, NmsAttacker);
+        if (craftEntity != null && craftAttacker != null &&
+                NmsUtil.isCraftLivingEntity(craftEntity) &&
+                NmsUtil.isCraftLivingEntity(craftAttacker)) {
             UUID uuid = UUID.randomUUID();
-            Component message;
-            if (TacZSpigotHook.debug) {
+            if (debug) {
                 LOGGER.warn("------------------------------------------------");
-                message = Component.translatable("debug.taczspigothook.handle.init");
-                LOGGER.warn(message.getString());
+                LOGGER.warn(Component.literal("§c正在将TacZ事件链接到Spigot").getString());
                 LOGGER.warn("HandleUUID:{}", uuid);
                 LOGGER.warn("Damage:{}", damage);
-                LOGGER.warn("Attacker:{}", craftLivingAttacker);
-                LOGGER.warn("Victim:{}", craftLivingEntity);
+                LOGGER.warn("Attacker:{}", craftAttacker);
+                LOGGER.warn("Victim:{}", craftEntity);
                 LOGGER.warn("headshot:{}", event.isHeadShot());
                 LOGGER.warn("------------------------------------------------");
             }
-            org.bukkit.entity.LivingEntity livingEntity = craftLivingEntity;
-            org.bukkit.entity.LivingEntity livingAttacker = craftLivingAttacker;
+            org.bukkit.entity.LivingEntity livingEntity = (org.bukkit.entity.LivingEntity) craftEntity;
+            org.bukkit.entity.LivingEntity livingAttacker = (org.bukkit.entity.LivingEntity) craftAttacker;
             EntityDamageByEntityEvent bukkitEvent = new EntityDamageByEntityEvent(livingAttacker, livingEntity, EntityDamageByEntityEvent.DamageCause.PROJECTILE, damage);
-            if (TacZSpigotHook.debug) {
-                message = Component.translatable("debug.taczspigothook.handle.call");
-                LOGGER.warn("Handle{}" + message.getString(), uuid);
+            if (debug) {
+                LOGGER.warn("Handle {} " + Component.literal("§c抛出事件").getString(), uuid);
             }
             Bukkit.getPluginManager().callEvent(bukkitEvent);
             if (bukkitEvent.isCancelled()) {
-                if (TacZSpigotHook.debug) {
-                    message = Component.translatable("debug.taczspigothook.handle.cancel");
-                    LOGGER.warn("Handle{}" + message.getString(), uuid);
+                if (debug) {
+                    LOGGER.warn("Handle {} " + Component.literal("§c被Spigot的插件取消").getString(), uuid);
                 }
                 event.setCanceled(true);
             } else {
-                if (TacZSpigotHook.debug) {
-                    message = Component.translatable("debug.taczspigothook.handle.success");
-                    LOGGER.warn("Handle{}" + message.getString(), uuid);
+                if (debug) {
+                    LOGGER.warn("Handle {} " + Component.literal("§c成功抛出").getString(), uuid);
                     LOGGER.warn("HandledDamage:{}", bukkitEvent.getDamage());
                     LOGGER.warn("headshot:{}", event.isHeadShot());
                 }
@@ -106,3 +103,4 @@ public class TacZSpigotHook {
         }
     }
 }
+
